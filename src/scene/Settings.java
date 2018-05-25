@@ -15,5 +15,4 @@ public class Settings {
 	this.supSampLvl = supSampLvl;
 	}
 	
-	
 }
