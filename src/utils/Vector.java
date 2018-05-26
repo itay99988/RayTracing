@@ -145,5 +145,6 @@ public class Vector {
 		return vecSubtract(v, scalarMult(n, 2*dotProduct(v,n))); 
 	}
 
+	//Added this comment just to test the git.
 
 }
