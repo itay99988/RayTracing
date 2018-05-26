@@ -1,6 +1,5 @@
 package utils;
 
-import java.awt.Color;
 import java.util.List;
 
 import scene.*;
@@ -78,17 +77,17 @@ public class Parser {
 			double r = Double.parseDouble(params[0]);
 			double g = Double.parseDouble(params[1]);
 			double b = Double.parseDouble(params[2]);
-			Color difCol = createColor(r,g,b);
+			double[] difCol = createColor(r,g,b);
 			
 			r = Double.parseDouble(params[3]);
 			g = Double.parseDouble(params[4]);
 			b = Double.parseDouble(params[5]);
-			Color specCol = createColor(r,g,b);
+			double[] specCol = createColor(r,g,b);
 			
 			r = Double.parseDouble(params[6]);
 			g = Double.parseDouble(params[7]);
 			b = Double.parseDouble(params[8]);
-			Color refCol = createColor(r,g,b);
+			double[] refCol = createColor(r,g,b);
 			
 			double phongCoef = Double.parseDouble(params[9]);
 			double transparency = Double.parseDouble(params[10]);
@@ -103,7 +102,7 @@ public class Parser {
 	}
 	
 	
-	public static Sphere parseSphere(String[] params, int numOfMaterials) {
+	public static Sphere parseSphere(String[] params, int numOfMaterials, List<Material> materials) {
 		if(params.length < 5) {
 			System.out.println("Sphere loading error: Not enough parameters given.");
 			return null;
@@ -118,7 +117,7 @@ public class Parser {
 				throw new Exception("Material not found");
 			}
 			
-			return new Sphere(new Vector(x,y,z), radius, matIndex);
+			return new Sphere(materials.get(matIndex), new Vector(x,y,z), radius, matIndex);
 		} catch (Exception e) {
 			System.out.println("Sphere loading error: "+e.getMessage());
 			return null;
@@ -126,7 +125,7 @@ public class Parser {
 	}
 	
 	
-	public static Plane parsePlane(String[] params, int numOfMaterials) {
+	public static Plane parsePlane(String[] params, int numOfMaterials, List<Material> materials) {
 		if(params.length < 5) {
 			System.out.println("Plane loading error: Not enough parameters given.");
 			return null;
@@ -141,7 +140,7 @@ public class Parser {
 				throw new Exception("Material not found");
 			}
 			
-			return new Plane(new Vector(x,y,z), offset, matIndex);
+			return new Plane(materials.get(matIndex-1), new Vector(x,y,z), offset, matIndex);
 		} catch (Exception e) {
 			System.out.println("Plane loading error: "+e.getMessage());
 			return null;
@@ -149,7 +148,7 @@ public class Parser {
 	}
 	
 	
-	public static Triangle parseTriangle(String[] params, int numOfMaterials) {
+	public static Triangle parseTriangle(String[] params, int numOfMaterials, List<Material> materials) {
 		if(params.length < 10) {
 			System.out.println("Triangle loading error: Not enough parameters given.");
 			return null;
@@ -175,7 +174,7 @@ public class Parser {
 				throw new Exception("Material not found");
 			}
 			
-			return new Triangle(u, v, w, matIndex); 
+			return new Triangle(materials.get(matIndex), u, v, w, matIndex); 
 		} catch (Exception e) {
 			System.out.println("Triangle loading error: "+e.getMessage());
 			return null;
@@ -217,16 +216,16 @@ public class Parser {
 	 * @param b
 	 * @return
 	 */
-	private static Color createColor(double r, double g, double b) {
-		int newR = (int)Math.round(255*r);
-		newR = Math.max(0,Math.min(255,newR));
-		
-		int newG = (int)Math.round(255*g);
-		newG = Math.max(0,Math.min(255,newG));
-		
-		int newB = (int)Math.round(255*b);
-		newB = Math.max(0,Math.min(255,newB));
-		
-		return new Color(newR,newG,newB);
+	private static double[] createColor(double r, double g, double b) {
+//		int newR = (int)Math.round(255*r);
+//		newR = Math.max(0,Math.min(255,newR));
+//		
+//		int newG = (int)Math.round(255*g);
+//		newG = Math.max(0,Math.min(255,newG));
+//		
+//		int newB = (int)Math.round(255*b);
+//		newB = Math.max(0,Math.min(255,newB));
+		double[] colorArr = {r,g,b};
+		return colorArr;
 	}
 }
