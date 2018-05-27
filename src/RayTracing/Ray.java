@@ -3,8 +3,8 @@ package RayTracing;
 import utils.Vector;
 
 public class Ray {
-	Vector source;		// The coordinate of the source point of the ray.
-	Vector direction;	// The normalized direction of the ray.
+	Vector source;
+	Vector direction;
 	
 	
 	public Ray(Vector source, Vector direction) {
@@ -19,7 +19,6 @@ public class Ray {
 		result=Vector.vecAdd(result, source);
 		return result;
 	}
-	
 	public Vector getSource() {
 		return new Vector(this.source.X(),this.source.Y(),this.source.Z());
 	}
