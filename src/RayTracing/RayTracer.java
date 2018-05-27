@@ -133,7 +133,7 @@ public class RayTracer {
 				}
 				else if (code.equals("sph"))
 				{
-					Sphere sphere = Parser.parseSphere(params, materials.size());
+					Sphere sphere = Parser.parseSphere(params, materials.size(), materials);
 					if(sphere == null) {
 						return;
 					}
@@ -143,7 +143,7 @@ public class RayTracer {
 				}
 				else if (code.equals("pln"))
 				{
-					Plane plane = Parser.parsePlane(params, materials.size());
+					Plane plane = Parser.parsePlane(params, materials.size(), materials);
 					if(plane == null) {
 						return;
 					}
@@ -153,7 +153,7 @@ public class RayTracer {
 				}
 				else if (code.equals("trg"))
 				{
-					Triangle triangle = Parser.parseTriangle(params, materials.size());
+					Triangle triangle = Parser.parseTriangle(params, materials.size(), materials);
 					if(triangle == null) {
 						return;
 					}
