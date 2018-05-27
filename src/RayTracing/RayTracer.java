@@ -24,14 +24,13 @@ public class RayTracer {
 	public static int imageWidth;
 	public static int imageHeight;
 	
-	private Camera			camera;
-	private static Settings	settings;
-	private List<Material>	materials = new ArrayList<>();
-	private List<Sphere> 	spheres = new ArrayList<>();
-	private List<Plane>		planes = new ArrayList<>();
-	private List<Triangle>	triangles = new ArrayList<>();
-	private List<Light>		lights = new ArrayList<>();
-	private List<GeneralObject> allObjects = new ArrayList<>();
+	private Camera				camera;
+	private static Settings		settings;
+	private List<Material>		materials = new ArrayList<>();
+	private List<GeneralObject> spheres = new ArrayList<>();
+	private List<GeneralObject>	planes = new ArrayList<>();
+	private List<GeneralObject>	triangles = new ArrayList<>();
+	private List<Light>			lights = new ArrayList<>();
 	
 	/**
 	 * Runs the ray tracer. Takes scene file, output image file and image size as input.
@@ -180,10 +179,6 @@ public class RayTracer {
 		}
 		
 		r.close();
-		
-		//fill the allObjects list - will be used later
-		allObjects = createAllObjectsList(spheres,planes,triangles);
-		
 
                 // It is recommended that you check here that the scene is valid,
                 // for example camera settings and all necessary materials were defined.
@@ -201,17 +196,41 @@ public class RayTracer {
 
 		// Create a byte array to hold the pixel data:
 		byte[] rgbData = new byte[this.imageWidth * this.imageHeight * 3];
-
-
-                // Put your ray tracing code here!
-                //
-                // Write pixel color values in RGB format to rgbData:
-                // Pixel [x, y] red component is in rgbData[(y * this.imageWidth + x) * 3]
-                //            green component is in rgbData[(y * this.imageWidth + x) * 3 + 1]
-                //             blue component is in rgbData[(y * this.imageWidth + x) * 3 + 2]
-                //
-                // Each of the red, green and blue components should be a byte, i.e. 0-255
-
+		
+		Ray ray;
+		double[] color = new double[3];
+		int sampleSize = settings.getSupSampLvl();
+		Vector iPoint;			// intersection point
+		List<GeneralObject> allObjects = new ArrayList<>();
+		allObjects.addAll(this.spheres);
+		allObjects.addAll(this.planes);
+		allObjects.addAll(this.triangles);
+		GeneralObject iObject;	// intersected object
+		
+		////////// Ray Tracing pipeline //////////
+		
+		//for each pixel:
+		for(int y = 0; y < imageHeight; y++) {
+			for(int x = 0; x < imageWidth; x++) {
+				double[] bgCol = settings.getBgCol();
+				double[] accuCol = {0,0,0};
+				
+				//for each sample:
+				for(int i = 0; i < sampleSize; i++) {
+					for(int j = 0; j < sampleSize; j++) {
+						double sampX = Math.random(); // values between 0 and 1.
+						double sampY = Math.random();
+						ray = camera.ConstructRayThroughPixel(x+sampX, y+sampY);
+						iObject = ray.findIntersectedObject(allObjects, ray);
+						iPoint = ray.findIntersectionPointForClosestObj(ray, iObject);
+						// More code should be added here ...
+						// ...
+						// ...
+					}
+				}
+				
+			}
+		}
 
 		long endTime = System.currentTimeMillis();
 		Long renderTime = endTime - startTime;
@@ -226,6 +245,26 @@ public class RayTracer {
 		System.out.println("Saved file " + outputFileName);
 
 	}
+	
+	/**
+	 * Converts r,g,b data of Pixel[x,y] from a floating point between 0 and 1 to a byte between 0 and 255 and stores in rgbData
+	 * 
+	 * @param x 		The x coordinate of the pixel.
+	 * @param y 		The y coordinate of the pixel.
+	 * @param r 		The red component of the pixel.
+	 * @param g 		The green component of the pixel.
+	 * @param b 		The blue component of the pixel.
+	 * @param rgbData	Pixel color data will be stored in this array.
+	 */
+	private static void setColorToPixel(int x, int y, double r, double g, double b, byte[] rgbData) {
+		byte newR = (byte)Math.max(0, Math.min(255, 255*r));
+		byte newG = (byte)Math.max(0, Math.min(255, 255*g));
+		byte newB = (byte)Math.max(0, Math.min(255, 255*b));
+
+		rgbData[(y * imageWidth + x) * 3] = newR;
+		rgbData[(y * imageWidth + x) * 3 + 1] = newG;
+		rgbData[(y * imageWidth + x) * 3 + 2] = newB;
+		}
 
 
 
@@ -272,24 +311,6 @@ public class RayTracer {
 
 	public static Settings getSettings() {
 		return settings;
-	}
-	
-	public static List<GeneralObject> createAllObjectsList(List<Sphere> spheres, List<Plane> planes, List<Triangle> triangles){
-		//create the list
-		List<GeneralObject> allObjects = new ArrayList<>();
-		
-		//fill it
-		for(Sphere sphere: spheres) {
-			allObjects.add(sphere);
-		}
-		for(Plane plane: planes) {
-			allObjects.add(plane);
-		}
-		for(Triangle triangle: triangles) {
-			allObjects.add(triangle);
-		}
-		
-		return allObjects;
 	}
 	
 }

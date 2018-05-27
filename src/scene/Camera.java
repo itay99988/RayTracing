@@ -71,7 +71,7 @@ public class Camera {
 		return new Ray(this.position, dest);
 	}
 
-	public Ray ConstructRayThroughPixel(int x, int y) {
+	public Ray ConstructRayThroughPixel(double x, double y) {
 		Settings settings = RayTracer.getSettings();
 		double imageWidth = settings.getImageWidth();
 		double imageHeight = settings.getImageHeight();

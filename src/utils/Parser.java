@@ -210,21 +210,13 @@ public class Parser {
 	}
 	
 	/**
-	 * Converts colors from range 0-1 (double) to 0-255 (integer)
-	 * @param r
-	 * @param g
-	 * @param b
+	 * Creates a new Color array.
+	 * @param r The red component of the pixel.
+	 * @param g The green component of the pixel.
+	 * @param b The blue component of the pixel.
 	 * @return
 	 */
 	private static double[] createColor(double r, double g, double b) {
-//		int newR = (int)Math.round(255*r);
-//		newR = Math.max(0,Math.min(255,newR));
-//		
-//		int newG = (int)Math.round(255*g);
-//		newG = Math.max(0,Math.min(255,newG));
-//		
-//		int newB = (int)Math.round(255*b);
-//		newB = Math.max(0,Math.min(255,newB));
 		double[] colorArr = {r,g,b};
 		return colorArr;
 	}
