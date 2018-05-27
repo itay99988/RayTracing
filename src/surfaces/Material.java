@@ -16,4 +16,28 @@ public class Material {
 		this.phongCoef = phongCoef;
 		this.transparency = transparency;
 	}
+
+	public double[] getDifCol() {
+		double[] newdifCol = {this.difCol[0], this.difCol[1], this.difCol[2]};
+		return newdifCol;
+	}
+
+	public double[] getSpecCol() {
+		double[] newSpecCol = {this.specCol[0], this.specCol[1], this.specCol[2]};
+		return newSpecCol;
+	}
+
+	public double[] getRefCol() {
+		double[] newRefCol = {this.refCol[0], this.refCol[1], this.refCol[2]};
+		return newRefCol;
+	}
+
+	public double getPhongCoef() {
+		return this.phongCoef;
+	}
+
+	public double getTransparency() {
+		return this.transparency;
+	}
+	
 }
