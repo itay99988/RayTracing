@@ -1,5 +1,9 @@
 package RayTracing;
 
+import java.util.List;
+
+import scene.Camera;
+import surfaces.GeneralObject;
 import utils.Vector;
 
 public class Ray {
@@ -34,5 +38,40 @@ public class Ray {
 	public void setDirection(Vector direction) {
 		this.direction =  new Vector(direction.X(),direction.Y(),direction.Z());
 		Vector.normalized(this.direction);
+	}
+	
+	
+	/**
+	 * Finds and returns the closest object intersected by the ray.
+	 * @param objects A list containing all objects from the scene.
+	 * @param ray 
+	 * @return
+	 */
+	public GeneralObject findIntersectedObject(List<GeneralObject> objects, Ray ray) {
+		double distanceFromObject = Double.MAX_VALUE;
+		double curDistance;
+		Vector iPoint;
+		GeneralObject iObject = null;
+		for(GeneralObject object : objects) {
+			iPoint = object.findIntersectionPoint(ray);
+			if(iPoint == null) { // No intersection
+				continue;
+			}
+			curDistance = Vector.calculateDistance(ray.getSource(), iPoint);
+			if(curDistance < distanceFromObject) {
+				distanceFromObject = curDistance;
+				iObject = object;
+			}
+		}
+		return iObject;
+	}
+	
+/**
+ * Finds the intersection point of ray with the closest object, when given as an arguement.
+ * @param closestObject
+ * @return
+ */
+	public Vector findIntersectionPointForClosestObj(Ray ray, GeneralObject closestObject) {
+		return closestObject.findIntersectionPoint(ray);		
 	}
 }
