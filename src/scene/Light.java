@@ -1,7 +1,11 @@
 package scene;
-import java.util.Arrays;
 
+import java.util.Arrays;
+import java.util.List;
+
+import RayTracing.Intersection;
 import RayTracing.Ray;
+import RayTracing.RayTracer;
 import surfaces.GeneralObject;
 import utils.Vector;
 
@@ -30,13 +34,32 @@ public class Light {
 		return newLgtColor;
 	}
 	
+	//returns null if no intersection was found
+	public double[] lightCheck(List<GeneralObject> allObjects,Ray ray,Intersection iPoint) {
+		Vector L=Vector.vecSubtract(iPoint.getIntersectionPoint(),this.position);
+		L = Vector.normalized(L);
+		
+		Ray lightRay=new Ray(this.position,Vector.scalarMult(L,-1));//create ray from light source to intersection point
+		Intersection lightIPoint = RayTracer.findIntersectionWithRay(allObjects,lightRay); //search for intersection
+		
+		//im not sure about that
+		//double dis=calcDistance((iPoint.getPhysicalObject().findNormalPoint(iPoint.getPoint(), position)), iPoint.getPhysicalObject().findNormalPoint(iPoint.getPoint(), ray.getSource()));
+		
+		//check if lights intersects same point upto epsilon
+		if((lightIPoint!=null) && (Vector.calculateDistance(lightIPoint.getIntersectionPoint(),iPoint.getIntersectionPoint())<0.0000001F))
+		{
+			return calculateColor(iPoint.getIntersectionPoint(),iPoint.getGeneralObject(), ray);
+		}
+		return null;
+	}
+	
 	//calculate the sum of the diffuse color and the specular color, base on phong-shading-model
 	//will need to take into consideration the following: beamed ray from camera, light ray, light color,
 	//phong-coeff,intersection point, intersected object's color properties.
 	//the actual params of the function: the point we want to sample its color, the object of that point, and
 	//the ray from the camera
-	//calclations were done according to the phong-shading model presentation with some minor changes
-	public double[] calculateColor(Vector iPoint,GeneralObject iObject,Ray ray) {
+	//calculations were done according to the phong-shading model presentation with some minor changes
+	private double[] calculateColor(Vector iPoint,GeneralObject iObject,Ray ray) {
 		//diffuse-color calculation
 		double[] KD=iObject.getMaterial().getDifCol();
 		Vector N=iObject.findNormalVector(iPoint,ray.getSource());
