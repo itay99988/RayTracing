@@ -27,6 +27,7 @@ public class Triangle extends GeneralObject{
 		
 		//intersection between the plane and the ray
 		Vector p = trianglePlane.findIntersectionPoint(ray);
+		if(p==null) return null;
 		
 		//check side 1
 		Vector v1 = Vector.vecSubtract(this.u, ray.getSource());

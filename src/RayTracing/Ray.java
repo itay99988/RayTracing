@@ -74,4 +74,9 @@ public class Ray {
 	public Vector findIntersectionPointForClosestObj(Ray ray, GeneralObject closestObject) {
 		return closestObject.findIntersectionPoint(ray);		
 	}
+	
+	public Intersection createIntersectionObject(Ray ray, GeneralObject closestObject, Vector iPoint) {
+		double distance = Vector.calculateDistance(ray.getSource(), iPoint);
+		return new Intersection(closestObject, iPoint, distance);
+	}
 }

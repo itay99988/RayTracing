@@ -39,18 +39,25 @@ public class Light {
 		Vector L=Vector.vecSubtract(iPoint.getIntersectionPoint(),this.position);
 		L = Vector.normalized(L);
 		
-		Ray lightRay=new Ray(this.position,Vector.scalarMult(L,-1));//create ray from light source to intersection point
-		Intersection lightIPoint = RayTracer.findIntersectionWithRay(allObjects,lightRay); //search for intersection
-		
-		//im not sure about that
-		//double dis=calcDistance((iPoint.getPhysicalObject().findNormalPoint(iPoint.getPoint(), position)), iPoint.getPhysicalObject().findNormalPoint(iPoint.getPoint(), ray.getSource()));
+		Ray lightRay=new Ray(this.position,Vector.scalarMult(L,1));//create ray from light source to intersection point
+		GeneralObject iObject = lightRay.findIntersectedObject(allObjects, lightRay);
+		Vector lightIntersectionPoint = lightRay.findIntersectionPointForClosestObj(lightRay, iObject);
+		Intersection lightIPoint = lightRay.createIntersectionObject(lightRay, iObject, lightIntersectionPoint);
 		
 		//check if lights intersects same point upto epsilon
-		if((lightIPoint!=null) && (Vector.calculateDistance(lightIPoint.getIntersectionPoint(),iPoint.getIntersectionPoint())<0.0000001F))
-		{
+		if((lightIPoint!=null) && (Vector.calculateDistance(lightIPoint.getIntersectionPoint(),iPoint.getIntersectionPoint())<0.0000001F)){
 			return calculateColor(iPoint.getIntersectionPoint(),iPoint.getGeneralObject(), ray);
 		}
-		return null;
+		else {
+			//there is not direct path between the light and the intersection point
+			//this is a reason to use the shadow intensity parameter
+			double[] sumDiffSpec = calculateColor(iPoint.getIntersectionPoint(),iPoint.getGeneralObject(), ray);
+			sumDiffSpec[0]*=(1-this.shadowIntensity);
+			sumDiffSpec[1]*=(1-this.shadowIntensity);
+			sumDiffSpec[2]*=(1-this.shadowIntensity);
+			
+			return sumDiffSpec;
+		}
 	}
 	
 	//calculate the sum of the diffuse color and the specular color, base on phong-shading-model
