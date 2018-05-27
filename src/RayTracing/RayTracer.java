@@ -31,6 +31,7 @@ public class RayTracer {
 	private List<Plane>		planes = new ArrayList<>();
 	private List<Triangle>	triangles = new ArrayList<>();
 	private List<Light>		lights = new ArrayList<>();
+	private List<GeneralObject> allObjects = new ArrayList<>();
 	
 	/**
 	 * Runs the ray tracer. Takes scene file, output image file and image size as input.
@@ -179,6 +180,10 @@ public class RayTracer {
 		}
 		
 		r.close();
+		
+		//fill the allObjects list - will be used later
+		allObjects = createAllObjectsList(spheres,planes,triangles);
+		
 
                 // It is recommended that you check here that the scene is valid,
                 // for example camera settings and all necessary materials were defined.
@@ -267,6 +272,24 @@ public class RayTracer {
 
 	public static Settings getSettings() {
 		return settings;
+	}
+	
+	public static List<GeneralObject> createAllObjectsList(List<Sphere> spheres, List<Plane> planes, List<Triangle> triangles){
+		//create the list
+		List<GeneralObject> allObjects = new ArrayList<>();
+		
+		//fill it
+		for(Sphere sphere: spheres) {
+			allObjects.add(sphere);
+		}
+		for(Plane plane: planes) {
+			allObjects.add(plane);
+		}
+		for(Triangle triangle: triangles) {
+			allObjects.add(triangle);
+		}
+		
+		return allObjects;
 	}
 	
 }
