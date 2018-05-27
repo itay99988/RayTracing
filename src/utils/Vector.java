@@ -145,6 +145,16 @@ public class Vector {
 		return vecSubtract(v, scalarMult(n, 2*dotProduct(v,n))); 
 	}
 
-	//Added this comment just to test the git.
+	//distance between two points
+	public static double calculateDistance(Vector p1, Vector p2)
+	{
+		double result = 0;
+
+		result+=Math.pow(p1.X()-p2.X(),2);
+		result+=Math.pow(p1.Y()-p2.Y(),2);
+		result+=Math.pow(p1.Z()-p2.Z(),2);
+		
+		return Math.sqrt(result);
+	}
 
 }

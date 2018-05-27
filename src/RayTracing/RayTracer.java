@@ -21,11 +21,11 @@ import utils.*;
  */
 public class RayTracer {
 
-	public int imageWidth;
-	public int imageHeight;
+	public static int imageWidth;
+	public static int imageHeight;
 	
 	private Camera			camera;
-	private Settings		settings;
+	private static Settings	settings;
 	private List<Material>	materials = new ArrayList<>();
 	private List<Sphere> 	spheres = new ArrayList<>();
 	private List<Plane>		planes = new ArrayList<>();
@@ -115,6 +115,8 @@ public class RayTracer {
 				else if (code.equals("set"))
 				{
 					settings = Parser.parseSettings(params);
+					settings.setImageWidth(imageWidth);
+					settings.setImageHeight(imageHeight);
 					if(settings == null) {
 						return;
 					}					System.out.println(String.format("Parsed general settings (line %d)", lineNum));
@@ -263,4 +265,8 @@ public class RayTracer {
 	}
 
 
+	public static Settings getSettings() {
+		return settings;
+	}
+	
 }
