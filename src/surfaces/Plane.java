@@ -1,6 +1,5 @@
 package surfaces;
 
-
 import RayTracing.Ray;
 import utils.Vector;
 
@@ -37,6 +36,12 @@ public class Plane extends GeneralObject {
 			return null;
 		Vector tv = Vector.scalarMult(ray.getDirection(), t);
 		return Vector.vecAdd(ray.getSource(), tv);
+	}
+	
+	//gets a point on the plane and returns the normal direction in that point
+	public Vector findNormalVector(Vector p) {
+		Vector returnedNormal = new Vector(this.normal.X(),this.normal.Y(),this.normal.Z());
+		return returnedNormal;
 	}
 	
 }

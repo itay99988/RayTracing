@@ -33,4 +33,11 @@ public class Sphere extends GeneralObject{
 		if(result[0] <result[1]) return ray.getPointAtDistance(result[0]);
 		else  return ray.getPointAtDistance(result[1]);
 	}
+	
+	//gets a point on the sphere and returns the normal direction in that point
+	public Vector findNormalVector(Vector p) {
+		Vector normal = Vector.vecSubtract(p, this.center);
+		normal = Vector.normalized(normal);
+		return normal;
+	}
 }

@@ -55,6 +55,15 @@ public class Triangle extends GeneralObject{
 			return null;
 				
 		return p;
+	}
+	
+	//gets a point on the triangle and returns the normal direction in that point
+	public Vector findNormalVector(Vector p) {
+		//build a normal out of the triangle points (by cross-product of the two vectors)
+		Vector vec1 = Vector.vecSubtract(this.v, this.u);
+		Vector vec2 = Vector.vecSubtract(this.v, this.w);
+		Vector normal = Vector.normalized(Vector.crossProduct(vec1, vec2));
 		
+		return normal;
 	}
 }
