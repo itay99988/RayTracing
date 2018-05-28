@@ -316,7 +316,7 @@ public class RayTracer {
 
 			// Reflection calculation
 			Vector normal = iObject.findNormalVector(iPoint, ray.getSource());
-			Ray refRay = new Ray(iPoint, Vector.reflectVec(ray.getDirection(), normal)); // Change the source point but not the direction.
+			Ray refRay = new Ray(iPoint, Vector.reflectVec(ray.getDirection(), normal)); // Change the source point and the direction.
 			GeneralObject refIObject = ray.findIntersectedObject(allObjects, refRay);
 			if(refIObject != null) { // Found intersection
 				Vector refIPoint = ray.findIntersectionPointForClosestObj(refRay, refIObject);
