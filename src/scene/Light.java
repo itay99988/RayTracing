@@ -45,7 +45,7 @@ public class Light {
 			return null;
 		}
 		Vector lightIntersectionPoint = lightRay.findIntersectionPointForClosestObj(lightRay, iObject);
-		Intersection lightIPoint = lightRay.createIntersectionObject(lightRay, iObject, lightIntersectionPoint);
+		Intersection lightIPoint = lightRay.createIntersectionObject(iObject, lightIntersectionPoint);
 		
 		//check if lights intersects same point upto epsilon
 		if((lightIPoint!=null) && (Vector.calculateDistance(lightIPoint.getIntersectionPoint(),iPoint.getIntersectionPoint())<0.0000001F)){

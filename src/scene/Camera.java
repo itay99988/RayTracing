@@ -20,7 +20,7 @@ public class Camera {
 				  double screenDistance, double screenWidth) {
 		this.position = position;
 		this.lookPosition = lookPosition;
-		this.direction = Vector.normalized(Vector.vecSubtract(position, lookPosition));
+		this.direction = Vector.normalized(Vector.vecSubtract(lookPosition, position));
 		this.upVector = upVector;
 		this.screenDistance = screenDistance;
 		this.screenWidth = screenWidth;
@@ -79,7 +79,7 @@ public class Camera {
 		double pixelHeight = pixelWidth * imageHeight/imageWidth;
 		
 		double upDistance = (imageHeight/2 - y) * pixelHeight;
-		double rightDistance = (x - imageWidth/2) * pixelWidth;
+		double rightDistance = (imageWidth/2 - x) * pixelWidth;
 		
 		Vector upMovement = Vector.scalarMult(this.upDirection, upDistance); 			// This vector indicates how much you have to move up from the center of the screen.
 		Vector rightMovement = Vector.scalarMult(this.rightDirection, rightDistance);	// This vector indicates how much you have to move right from the center of the screen.
@@ -87,7 +87,7 @@ public class Camera {
 		Vector dest;
 		dest = Vector.vecAdd(this.screenCenter, upMovement);
 		dest = Vector.vecAdd(dest, rightMovement);
-		
+		dest = Vector.vecSubtract(dest, this.position);
 		return makeRay(dest);
 	}
 	

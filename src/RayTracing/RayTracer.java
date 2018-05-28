@@ -215,7 +215,7 @@ public class RayTracer {
 		for(int y = 0; y < imageHeight; y++) {
 			for(int x = 0; x < imageWidth; x++) {
 				double[] bgCol = settings.getBgCol();	// Background color
-				double[] accuCol = {0,0,0};				// Accumulated color
+				double[] accuCol = {0.0, 0.0, 0.0};				// Accumulated color
 				
 				//for each sample:
 				for(int i = 0; i < sampleSize; i++) {
@@ -232,17 +232,18 @@ public class RayTracer {
 						}
 						else { // Intersected. Calculate color returned by intersected object.
 							iPoint = ray.findIntersectionPointForClosestObj(ray, iObject);
-							Intersection intersection = ray.createIntersectionObject(ray, iObject, iPoint);
+							Intersection intersection = ray.createIntersectionObject(iObject, iPoint);
 							// Accumulate the color given from this specific sample
 							ArrayServices.arrAdd(accuCol, computeColor(allObjects, ray, intersection, settings));
 						}
 					}
 					
 					// calculate the average color for all samples of that pixel
-					ArrayServices.arrScalarMult(accuCol, 1/(sampleSize*sampleSize));
 					
-					setColorToPixel(x, y, accuCol[0], accuCol[1], accuCol[2], rgbData);
 				}
+				ArrayServices.arrScalarMult(accuCol, 1.0/(sampleSize*sampleSize));
+				setColorToPixel(x, y, accuCol[0], accuCol[1], accuCol[2], rgbData);
+
 				
 				
 			}
@@ -293,7 +294,7 @@ public class RayTracer {
 	 * @return
 	 */
 	private double[] recComputeCol(List<GeneralObject> allObjects,Ray ray,Intersection intersection,  double[] bgCol, int curRecLvl, int maxRecLvl) {
-		double[] curCol = {0,0,0};
+		double[] curCol = {0.0, 0.0, 0.0};
 		double transparency = intersection.getGeneralObject().getMaterial().getTransparency();
 		double[] reflectionCol =  intersection.getGeneralObject().getMaterial().getRefCol();
 		double[] bgTimesTrans = Arrays.copyOf(bgCol, 3);
@@ -316,7 +317,7 @@ public class RayTracer {
 			GeneralObject transIObject = ray.findIntersectedObject(allObjects, transRay);
 			if(transIObject != null) { // Found intersection
 				Vector transIPoint = ray.findIntersectionPointForClosestObj(transRay, transIObject);
-				Intersection transIntersection = transRay.createIntersectionObject(transRay, transIObject, transIPoint);
+				Intersection transIntersection = transRay.createIntersectionObject(transIObject, transIPoint);
 				ArrayServices.arrAdd(bgTimesTrans, recComputeCol(allObjects, transRay, transIntersection, bgCol, curRecLvl+1, maxRecLvl)); // Add the transparency color returned by other objects to the bg color
 			}
 
@@ -326,7 +327,7 @@ public class RayTracer {
 			GeneralObject refIObject = ray.findIntersectedObject(allObjects, refRay);
 			if(refIObject != null) { // Found intersection
 				Vector refIPoint = ray.findIntersectionPointForClosestObj(refRay, refIObject);
-				Intersection refIntersection = refRay.createIntersectionObject(refRay, refIObject, refIPoint);
+				Intersection refIntersection = refRay.createIntersectionObject(refIObject, refIPoint);
 				ArrayServices.arrMult(reflectionCol, recComputeCol(allObjects, refRay, refIntersection, bgCol, curRecLvl+1, maxRecLvl)); // Multiply object's reflection color by the reflected color
 			}
 		}

@@ -129,7 +129,7 @@ public class Vector {
 	 */
 	public static Vector normalized(Vector v) {
 		double magnitude = getMagnitude(v);
-		return scalarMult(v, 1/magnitude);
+		return scalarMult(v, 1.0/magnitude);
 		
 	}
 	

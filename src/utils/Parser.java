@@ -18,14 +18,14 @@ public class Parser {
 		double z = Double.parseDouble(params[2]);
 		Vector position = new Vector(x, y, z);
 		
-		x = Integer.parseInt(params[3]);
-		y = Integer.parseInt(params[4]);
-		z = Integer.parseInt(params[5]);
+		x = Double.parseDouble(params[3]);
+		y = Double.parseDouble(params[4]);
+		z = Double.parseDouble(params[5]);
 		Vector lookPosition = new Vector(x,y,z);
 		
-		x = Integer.parseInt(params[6]);
-		y = Integer.parseInt(params[7]);
-		z = Integer.parseInt(params[8]);
+		x = Double.parseDouble(params[6]);
+		y = Double.parseDouble(params[7]);
+		z = Double.parseDouble(params[8]);
 		Vector upVector = new Vector(x,y,z);
 		
 		double screenDistance = Double.parseDouble(params[9]);
