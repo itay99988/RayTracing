@@ -39,7 +39,7 @@ public class Plane extends GeneralObject {
 	}
 	
 	//gets a point on the plane and returns the normal direction in that point
-	public Vector findNormalVector(Vector p) {
+	protected Vector findNormalVector(Vector p) {
 		Vector returnedNormal = new Vector(this.normal.X(),this.normal.Y(),this.normal.Z());
 		return returnedNormal;
 	}

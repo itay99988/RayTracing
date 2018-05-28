@@ -141,7 +141,8 @@ public class Vector {
 	 * @return
 	 */
 	public static Vector reflectVec(Vector v, Vector normal) {
-		Vector n = normalized(normal); //Normalize the normal
+		v = Vector.normalized(v);		// Normalize the vector
+		Vector n = normalized(normal);	// Normalize the normal
 		return vecSubtract(v, scalarMult(n, 2*dotProduct(v,n))); 
 	}
 

@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.imageio.ImageIO;
@@ -198,7 +199,6 @@ public class RayTracer {
 		byte[] rgbData = new byte[this.imageWidth * this.imageHeight * 3];
 		
 		Ray ray;
-		double[] color = new double[3];
 		int sampleSize = settings.getSupSampLvl();
 		Vector iPoint;			// intersection point
 		List<GeneralObject> allObjects = new ArrayList<>();
@@ -207,13 +207,14 @@ public class RayTracer {
 		allObjects.addAll(this.triangles);
 		GeneralObject iObject;	// intersected object
 		
-		////////// Ray Tracing pipeline //////////
+		
+		////////////////////// Ray Tracing pipeline //////////////////////		
 		
 		//for each pixel:
 		for(int y = 0; y < imageHeight; y++) {
 			for(int x = 0; x < imageWidth; x++) {
-				double[] bgCol = settings.getBgCol();
-				double[] accuCol = {0,0,0};
+				double[] bgCol = settings.getBgCol();	// Background color
+				double[] accuCol = {0,0,0};				// Accumulated color
 				
 				//for each sample:
 				for(int i = 0; i < sampleSize; i++) {
@@ -221,16 +222,31 @@ public class RayTracer {
 						double sampX = Math.random(); // values between 0 and 1.
 						double sampY = Math.random();
 						ray = camera.ConstructRayThroughPixel(x+sampX, y+sampY);
+						
+						// Find intersection
 						iObject = ray.findIntersectedObject(allObjects, ray);
-						iPoint = ray.findIntersectionPointForClosestObj(ray, iObject);
-						// More code should be added here ...
-						// ...
-						// ...
+						if(iObject == null) { // Not intersected by any object. Add only background color.
+							ArrayServices.arrAdd(accuCol,bgCol);
+						}
+						else { // Intersected. Calculate color returned by intersected object.
+							iPoint = ray.findIntersectionPointForClosestObj(ray, iObject);
+							Intersection intersection = ray.createIntersectionObject(ray, iObject, iPoint);
+							// Accumulate the color given from this specific sample
+							ArrayServices.arrAdd(accuCol, computeColor(allObjects, ray, intersection, settings));
+						}
 					}
+					
+					// calculate the average color for all samples of that pixel
+					ArrayServices.arrScalarMult(accuCol, 1/(sampleSize*sampleSize));
+					
+					setColorToPixel(x, y, accuCol[0], accuCol[1], accuCol[2], rgbData);
 				}
+				
 				
 			}
 		}
+		/////////////////// End of ray tracing pipeline //////////////////
+		
 
 		long endTime = System.currentTimeMillis();
 		Long renderTime = endTime - startTime;
@@ -245,6 +261,78 @@ public class RayTracer {
 		System.out.println("Saved file " + outputFileName);
 
 	}
+	
+
+	
+	/**
+	 * Computes the color returned from the GeneralObject intersected by a ray.
+	 * @param allObjects A list containing all GeneralObject's from the scene
+	 * @param ray The ray that intersecters the object
+	 * @param intersection The intersection information
+	 * @param settings The general settings of the scene.
+	 * @return The final color returned from the object.
+	 */
+	private double[] computeColor(List<GeneralObject> allObjects,Ray ray,Intersection intersection, Settings settings) {
+		double[] bgCol = settings.getBgCol();
+		int maxRecLvl = settings.getMaxRecursion();
+		double[] finalCol = new double[3];
+		recComputeCol(allObjects, ray, intersection, bgCol, 1, maxRecLvl);
+		return finalCol;
+	}
+	
+	/**
+	 * Recursively computes the color returned from the GeneralObject intersected by a ray.
+	 * @param allObjects
+	 * @param ray The ray that intersecters the object
+	 * @param intersection The intersection information
+	 * @param bgCol Color of the background
+	 * @param curRecLvl Current recursion level.
+	 * @param maxRecLvl Maximum recursion level.
+	 * @return
+	 */
+	private double[] recComputeCol(List<GeneralObject> allObjects,Ray ray,Intersection intersection,  double[] bgCol, int curRecLvl, int maxRecLvl) {
+		double[] curCol = {0,0,0};
+		double transparency = intersection.getGeneralObject().getMaterial().getTransparency();
+		double[] reflectionCol =  intersection.getGeneralObject().getMaterial().getRefCol();
+		double[] bgTimesTrans = Arrays.copyOf(bgCol, 3);
+		for(Light light : this.lights) { // Calculate the value of diffuse+specular from all lights.
+			ArrayServices.arrAdd(curCol, light.lightCheck(allObjects, ray, intersection));
+		}
+		ArrayServices.arrScalarMult(curCol, 1-transparency); // Calculate (diffuse+specular)*(1-transparency)
+		
+		// Haven't reached max recursion level
+		if(curRecLvl != maxRecLvl) {
+			Vector iPoint = intersection.getIntersectionPoint();
+			GeneralObject iObject = intersection.getGeneralObject();
+
+			// Transparency calculation
+			Ray transRay = new Ray(iPoint, ray.getDirection()); // Change the source point but not the direction.
+			GeneralObject transIObject = ray.findIntersectedObject(allObjects, transRay);
+			if(transIObject != null) { // Found intersection
+				Vector transIPoint = ray.findIntersectionPointForClosestObj(transRay, transIObject);
+				Intersection transIntersection = transRay.createIntersectionObject(transRay, transIObject, transIPoint);
+				ArrayServices.arrAdd(bgTimesTrans, recComputeCol(allObjects, transRay, transIntersection, bgCol, curRecLvl+1, maxRecLvl)); // Add the transparency color returned by other objects to the bg color
+			}
+
+			// Reflection calculation
+			Vector normal = iObject.findNormalVector(iPoint, ray.getSource());
+			Ray refRay = new Ray(iPoint, Vector.reflectVec(ray.getDirection(), normal)); // Change the source point but not the direction.
+			GeneralObject refIObject = ray.findIntersectedObject(allObjects, refRay);
+			if(refIObject != null) { // Found intersection
+				Vector refIPoint = ray.findIntersectionPointForClosestObj(refRay, refIObject);
+				Intersection refIntersection = refRay.createIntersectionObject(refRay, refIObject, refIPoint);
+				ArrayServices.arrMult(reflectionCol, recComputeCol(allObjects, refRay, refIntersection, bgCol, curRecLvl+1, maxRecLvl)); // Multiply object's reflection color by the reflected color
+			}
+		}
+		
+		
+		ArrayServices.arrScalarMult(bgTimesTrans, transparency); // Calculate (background color)*transparency.
+		ArrayServices.arrAdd(curCol, bgTimesTrans); // Calculate (background color)*transparency + (diffuse+specular)*(1-transparency)
+		ArrayServices.arrAdd(curCol, reflectionCol); // Calculate (background color)*transparency + (diffuse+specular)*(1-transparency + (reflection color)
+		
+		return curCol;
+	}
+	
 	
 	/**
 	 * Converts r,g,b data of Pixel[x,y] from a floating point between 0 and 1 to a byte between 0 and 255 and stores in rgbData

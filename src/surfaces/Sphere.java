@@ -35,7 +35,7 @@ public class Sphere extends GeneralObject{
 	}
 	
 	//gets a point on the sphere and returns the normal direction in that point
-	public Vector findNormalVector(Vector p) {
+	protected Vector findNormalVector(Vector p) {
 		Vector normal = Vector.vecSubtract(p, this.center);
 		normal = Vector.normalized(normal);
 		return normal;

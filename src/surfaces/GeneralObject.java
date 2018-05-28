@@ -12,7 +12,7 @@ public abstract class GeneralObject {
 	abstract public Vector findIntersectionPoint(Ray ray);
 	
 	//gets a point on the object and returns the normal direction in that point
-	public abstract Vector findNormalVector(Vector p);
+	protected abstract Vector findNormalVector(Vector p);
 	
 	//there are two options for the normal direction. we have to return
 	//the normal which comes toward the out point - the source of the beamed ray
