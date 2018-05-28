@@ -1,4 +1,4 @@
-/scene/
-/utils/
-/RayTracing/
-/surfaces/
+/RayTracing//bin//RayTracing/
+/RayTracing//bin//scene/
+/RayTracing//bin//surfaces/
+/RayTracing//bin//utils/

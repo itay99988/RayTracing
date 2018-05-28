@@ -43,6 +43,7 @@ public class Ray {
 	
 	/**
 	 * Finds and returns the closest object intersected by the ray.
+	 * Returns null if no intersections at all.
 	 * @param objects A list containing all objects from the scene.
 	 * @param ray 
 	 * @return
