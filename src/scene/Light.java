@@ -41,6 +41,9 @@ public class Light {
 		
 		Ray lightRay=new Ray(this.position,Vector.scalarMult(L,1));//create ray from light source to intersection point
 		GeneralObject iObject = lightRay.findIntersectedObject(allObjects, lightRay);
+		if(iObject == null) {
+			return null;
+		}
 		Vector lightIntersectionPoint = lightRay.findIntersectionPointForClosestObj(lightRay, iObject);
 		Intersection lightIPoint = lightRay.createIntersectionObject(lightRay, iObject, lightIntersectionPoint);
 		

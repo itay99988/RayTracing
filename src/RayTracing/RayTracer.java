@@ -63,13 +63,14 @@ public class RayTracer {
 			tracer.parseScene(sceneFileName);
 
 			// Render scene:
-			//tracer.renderScene(outputFileName);
+			tracer.renderScene(outputFileName);
 
 //		} catch (IOException e) {
 //			System.out.println(e.getMessage());
 		} catch (RayTracerException e) {
 			System.out.println(e.getMessage());
 		} catch (Exception e) {
+			e.printStackTrace();
 			System.out.println(e.getMessage());
 		}
 
@@ -225,6 +226,7 @@ public class RayTracer {
 						
 						// Find intersection
 						iObject = ray.findIntersectedObject(allObjects, ray);
+
 						if(iObject == null) { // Not intersected by any object. Add only background color.
 							ArrayServices.arrAdd(accuCol,bgCol);
 						}
@@ -276,7 +278,7 @@ public class RayTracer {
 		double[] bgCol = settings.getBgCol();
 		int maxRecLvl = settings.getMaxRecursion();
 		double[] finalCol = new double[3];
-		recComputeCol(allObjects, ray, intersection, bgCol, 1, maxRecLvl);
+		finalCol = recComputeCol(allObjects, ray, intersection, bgCol, 1, maxRecLvl);
 		return finalCol;
 	}
 	
@@ -295,8 +297,12 @@ public class RayTracer {
 		double transparency = intersection.getGeneralObject().getMaterial().getTransparency();
 		double[] reflectionCol =  intersection.getGeneralObject().getMaterial().getRefCol();
 		double[] bgTimesTrans = Arrays.copyOf(bgCol, 3);
+		double[] lightCol;
 		for(Light light : this.lights) { // Calculate the value of diffuse+specular from all lights.
-			ArrayServices.arrAdd(curCol, light.lightCheck(allObjects, ray, intersection));
+			lightCol = light.lightCheck(allObjects, ray, intersection);
+			if(lightCol != null) {
+				ArrayServices.arrAdd(curCol, lightCol);
+			}
 		}
 		ArrayServices.arrScalarMult(curCol, 1-transparency); // Calculate (diffuse+specular)*(1-transparency)
 		
