@@ -2,7 +2,6 @@ package RayTracing;
 
 import java.util.List;
 
-import scene.Camera;
 import surfaces.GeneralObject;
 import utils.Vector;
 
@@ -13,7 +12,7 @@ public class Ray {
 	
 	public Ray(Vector source, Vector direction) {
 		this.source = source;
-		this.direction = Vector.normalized(direction);
+		this.direction = direction.normalized();
 	}
 	
 	public Vector getPointAtDistance(double distance)
@@ -37,7 +36,7 @@ public class Ray {
 
 	public void setDirection(Vector direction) {
 		this.direction =  new Vector(direction.X(),direction.Y(),direction.Z());
-		Vector.normalized(this.direction);
+		this.direction.normalized();
 	}
 	
 	

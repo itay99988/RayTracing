@@ -7,13 +7,11 @@ import utils.Vector;
 public class Sphere extends GeneralObject{
 	private Vector center;
 	private double radius;
-	private int matIndex;
 	
-	public Sphere(Material material, Vector position, double radius, int matIndex){
+	public Sphere(Material material, Vector position, double radius){
 		this.setMaterial(material);
 		this.center = position;
 		this.radius = radius;
-		this.matIndex = matIndex;
 	}
 	
 	public Vector findIntersectionPoint(Ray ray) {
@@ -36,8 +34,6 @@ public class Sphere extends GeneralObject{
 	
 	//gets a point on the sphere and returns the normal direction in that point
 	protected Vector findNormalVector(Vector p) {
-		Vector normal = Vector.vecSubtract(p, this.center);
-		normal = Vector.normalized(normal);
-		return normal;
+		return Vector.vecSubtract(p, this.center).normalized();
 	}
 }

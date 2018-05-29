@@ -8,7 +8,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import javax.imageio.ImageIO;
@@ -43,8 +42,8 @@ public class RayTracer {
 			RayTracer tracer = new RayTracer();
 
                         // Default values:
-			tracer.imageWidth = 500;
-			tracer.imageHeight = 500;
+			imageWidth = 500;
+			imageHeight = 500;
 
 			if (args.length < 2)
 				throw new RayTracerException("Not enough arguments provided. Please specify an input scene file and an output image file for rendering.");
@@ -54,8 +53,8 @@ public class RayTracer {
 
 			if (args.length > 3)
 			{
-				tracer.imageWidth = Integer.parseInt(args[2]);
-				tracer.imageHeight = Integer.parseInt(args[3]);
+				imageWidth = Integer.parseInt(args[2]);
+				imageHeight = Integer.parseInt(args[3]);
 			}
 
 
@@ -182,9 +181,6 @@ public class RayTracer {
 		
 		r.close();
 
-                // It is recommended that you check here that the scene is valid,
-                // for example camera settings and all necessary materials were defined.
-
 		System.out.println("Finished parsing scene file " + sceneFileName);
 
 	}
@@ -197,16 +193,16 @@ public class RayTracer {
 		long startTime = System.currentTimeMillis();
 
 		// Create a byte array to hold the pixel data:
-		byte[] rgbData = new byte[this.imageWidth * this.imageHeight * 3];
+		byte[] rgbData = new byte[imageWidth * imageHeight * 3];
 		
 		Ray ray;
 		int sampleSize = settings.getSupSampLvl();
 		Vector iPoint;			// intersection point
+		GeneralObject iObject;	// intersected object
 		List<GeneralObject> allObjects = new ArrayList<>();
 		allObjects.addAll(this.spheres);
 		allObjects.addAll(this.planes);
 		allObjects.addAll(this.triangles);
-		GeneralObject iObject;	// intersected object
 		
 		
 		////////////////////// Ray Tracing pipeline //////////////////////		
@@ -222,7 +218,7 @@ public class RayTracer {
 					for(int j = 0; j < sampleSize; j++) {
 						double sampX = Math.random(); // values between 0 and 1.
 						double sampY = Math.random();
-						ray = camera.ConstructRayThroughPixel(x+sampX, y+sampY);
+						ray = camera.constructRayThroughPixel(x+sampX, y+sampY);
 						
 						// Find intersection
 						iObject = ray.findIntersectedObject(allObjects, ray);
@@ -237,15 +233,12 @@ public class RayTracer {
 							ArrayServices.arrAdd(accuCol, computeColor(allObjects, ray, intersection, settings));
 						}
 					}
-					
-					// calculate the average color for all samples of that pixel
-					
 				}
+				
+				// calculate the average color for all samples of that pixel
 				ArrayServices.arrScalarMult(accuCol, 1.0/(sampleSize*sampleSize));
+				
 				setColorToPixel(x, y, accuCol[0], accuCol[1], accuCol[2], rgbData);
-
-				
-				
 			}
 		}
 		/////////////////// End of ray tracing pipeline //////////////////
@@ -259,7 +252,7 @@ public class RayTracer {
 		System.out.println("Finished rendering scene in " + renderTime.toString() + " milliseconds.");
 
                 // This is already implemented, and should work without adding any code.
-		saveImage(this.imageWidth, rgbData, outputFileName);
+		saveImage(imageWidth, rgbData, outputFileName);
 
 		System.out.println("Saved file " + outputFileName);
 
@@ -297,7 +290,7 @@ public class RayTracer {
 		double[] curCol = {0.0, 0.0, 0.0};
 		double transparency = intersection.getGeneralObject().getMaterial().getTransparency();
 		double[] reflectionCol =  intersection.getGeneralObject().getMaterial().getRefCol();
-		double[] bgTimesTrans = Arrays.copyOf(bgCol, 3);
+		double[] bgTimesTrans = {0.0, 0.0, 0.0};
 		double[] lightCol;
 		for(Light light : this.lights) { // Calculate the value of diffuse+specular from all lights.
 			lightCol = light.lightCheck(allObjects, ray, intersection);
@@ -312,18 +305,27 @@ public class RayTracer {
 			Vector iPoint = intersection.getIntersectionPoint();
 			GeneralObject iObject = intersection.getGeneralObject();
 
-			// Transparency calculation
-			Ray transRay = new Ray(iPoint, ray.getDirection()); // Change the source point but not the direction.
+			// Transparency calculation			
+			double distance = 0.0000000001F; // Move the ray a bit from the intersection point so it won't find the same intersection twice.
+			Ray transRay = new Ray(Vector.vecAdd(iPoint, Vector.scalarMult(ray.getDirection(), distance)), ray.getDirection()); // Change the source point and the direction.
+
 			GeneralObject transIObject = ray.findIntersectedObject(allObjects, transRay);
-			if(transIObject != null) { // Found intersection
+			if(transIObject != null && transparency > 0) { // Found intersection
 				Vector transIPoint = ray.findIntersectionPointForClosestObj(transRay, transIObject);
 				Intersection transIntersection = transRay.createIntersectionObject(transIObject, transIPoint);
-				ArrayServices.arrAdd(bgTimesTrans, recComputeCol(allObjects, transRay, transIntersection, bgCol, curRecLvl+1, maxRecLvl)); // Add the transparency color returned by other objects to the bg color
+				
+				List<GeneralObject> mostObjects = new ArrayList<GeneralObject>(allObjects); // Pass all objects except 
+				mostObjects.remove(iObject);
+				
+				ArrayServices.arrAdd(bgTimesTrans, recComputeCol(mostObjects, transRay, transIntersection, bgCol, curRecLvl+1, maxRecLvl)); // Add the transparency color returned by other objects to the bg color
+			}
+			else if(transparency > 0){ // No Object behind and current object is transparent
+				ArrayServices.arrAdd(bgTimesTrans, bgCol);
 			}
 
 			// Reflection calculation
 			Vector normal = iObject.findNormalVector(iPoint, ray.getSource());
-			Ray refRay = new Ray(iPoint, Vector.reflectVec(ray.getDirection(), normal)); // Change the source point and the direction.
+			Ray refRay = new Ray(Vector.vecAdd(iPoint, Vector.scalarMult(Vector.scalarMult(ray.getDirection(), -1), distance)), Vector.reflectVec(ray.getDirection(), normal)); // Change the source point and the direction.
 			GeneralObject refIObject = ray.findIntersectedObject(allObjects, refRay);
 			if(refIObject != null) { // Found intersection
 				Vector refIPoint = ray.findIntersectionPointForClosestObj(refRay, refIObject);
@@ -398,6 +400,7 @@ public class RayTracer {
 	    return result;
 	}
 
+	@SuppressWarnings("serial")
 	public static class RayTracerException extends Exception {
 
 		public RayTracerException(String msg) {  super(msg); }

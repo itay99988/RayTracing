@@ -116,8 +116,8 @@ public class Vector {
 	 * @param v
 	 * @return the magnitude of the vector.
 	 */
-	private static double getMagnitude(Vector v) {
-		double sqSum = v.X()*v.X() + v.Y()*v.Y() + v.Z()*v.Z();
+	public double getMagnitude() {
+		double sqSum = this.x*this.x + this.y*this.y + this.z*this.z;
 		return Math.sqrt(sqSum);
 	}
 	
@@ -127,9 +127,9 @@ public class Vector {
 	 * @param v
 	 * @return
 	 */
-	public static Vector normalized(Vector v) {
-		double magnitude = getMagnitude(v);
-		return scalarMult(v, 1.0/magnitude);
+	public Vector normalized() {
+		double magnitude = this.getMagnitude();
+		return scalarMult(this, 1.0/magnitude);
 		
 	}
 	
@@ -141,8 +141,8 @@ public class Vector {
 	 * @return
 	 */
 	public static Vector reflectVec(Vector v, Vector normal) {
-		v = Vector.normalized(v);		// Normalize the vector
-		Vector n = normalized(normal);	// Normalize the normal
+		v = v.normalized();		// Normalize the vector
+		Vector n = normal.normalized();	// Normalize the normal
 		return vecSubtract(v, scalarMult(n, 2*dotProduct(v,n))); 
 	}
 

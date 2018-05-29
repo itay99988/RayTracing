@@ -20,12 +20,12 @@ public class Camera {
 				  double screenDistance, double screenWidth) {
 		this.position = position;
 		this.lookPosition = lookPosition;
-		this.direction = Vector.normalized(Vector.vecSubtract(lookPosition, position));
+		this.direction = Vector.vecSubtract(lookPosition, position).normalized();
 		this.upVector = upVector;
 		this.screenDistance = screenDistance;
 		this.screenWidth = screenWidth;
-		this.rightDirection = Vector.normalized(Vector.crossProduct(this.direction, upVector));
-		this.upDirection = Vector.normalized(Vector.crossProduct(this.rightDirection, this.direction));
+		this.rightDirection = Vector.crossProduct(this.direction, upVector).normalized();
+		this.upDirection = Vector.crossProduct(this.rightDirection, this.direction).normalized();
 		Ray ray = new Ray(position, direction);
 		this.screenCenter = ray.getPointAtDistance(screenDistance);
 		}
@@ -71,12 +71,12 @@ public class Camera {
 		return new Ray(this.position, dest);
 	}
 
-	public Ray ConstructRayThroughPixel(double x, double y) {
+	public Ray constructRayThroughPixel(double x, double y) {
 		Settings settings = RayTracer.getSettings();
 		double imageWidth = settings.getImageWidth();
 		double imageHeight = settings.getImageHeight();
 		double pixelWidth = this.getScreenWidth()/imageWidth;
-		double pixelHeight = pixelWidth * imageHeight/imageWidth;
+		double pixelHeight = pixelWidth * imageWidth/imageHeight;
 		
 		double upDistance = (imageHeight/2 - y) * pixelHeight;
 		double rightDistance = (imageWidth/2 - x) * pixelWidth;

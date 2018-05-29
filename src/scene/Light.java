@@ -5,7 +5,6 @@ import java.util.List;
 
 import RayTracing.Intersection;
 import RayTracing.Ray;
-import RayTracing.RayTracer;
 import surfaces.GeneralObject;
 import utils.Vector;
 
@@ -36,10 +35,9 @@ public class Light {
 	
 	//returns null if no intersection was found
 	public double[] lightCheck(List<GeneralObject> allObjects,Ray ray,Intersection iPoint) {
-		Vector L=Vector.vecSubtract(iPoint.getIntersectionPoint(),this.position);
-		L = Vector.normalized(L);
+		Vector L = Vector.vecSubtract(iPoint.getIntersectionPoint(),this.position).normalized();
 		
-		Ray lightRay=new Ray(this.position,Vector.scalarMult(L,1));//create ray from light source to intersection point
+		Ray lightRay=new Ray(this.position, L);//create ray from light source to intersection point
 		GeneralObject iObject = lightRay.findIntersectedObject(allObjects, lightRay);
 		if(iObject == null) {
 			return null;
@@ -72,10 +70,8 @@ public class Light {
 	private double[] calculateColor(Vector iPoint,GeneralObject iObject,Ray ray) {
 		//diffuse-color calculation
 		double[] KD=iObject.getMaterial().getDifCol();
-		Vector N=iObject.findNormalVector(iPoint,ray.getSource());
-		N=Vector.normalized(N);
-		Vector L = Vector.vecSubtract(iPoint,this.position);
-		L=Vector.normalized(L);
+		Vector N = iObject.findNormalVector(iPoint,ray.getSource()).normalized();
+		Vector L = Vector.vecSubtract(iPoint,this.position).normalized();
 		double NL=Vector.dotProduct(N,L);
 		if(NL<=0) NL*=-1;
 		
@@ -89,10 +85,8 @@ public class Light {
 		//specular-color calculation
 		double[] KS= iObject.getMaterial().getSpecCol();
 		double n=iObject.getMaterial().getPhongCoef();
-		Vector R=Vector.reflectVec(L,N);
-		R = Vector.normalized(R);
-		Vector V=Vector.scalarMult(ray.getDirection(),-1);
-		V = Vector.normalized(V);
+		Vector R=Vector.reflectVec(L,N).normalized();
+		Vector V = Vector.scalarMult(ray.getDirection(),-1).normalized();
 		double VR=Vector.dotProduct(V,R);
 		if(VR<=0) VR*=-1;
 		

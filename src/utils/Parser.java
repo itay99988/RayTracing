@@ -117,7 +117,7 @@ public class Parser {
 				throw new Exception("Material not found");
 			}
 			
-			return new Sphere(materials.get(matIndex-1), new Vector(x,y,z), radius, matIndex);
+			return new Sphere(materials.get(matIndex-1), new Vector(x,y,z), radius);
 		} catch (Exception e) {
 			System.out.println("Sphere loading error: "+e.getMessage());
 			return null;
@@ -140,7 +140,7 @@ public class Parser {
 				throw new Exception("Material not found");
 			}
 			
-			return new Plane(materials.get(matIndex-1), new Vector(x,y,z), offset, matIndex);
+			return new Plane(materials.get(matIndex-1), new Vector(x,y,z), offset);
 		} catch (Exception e) {
 			System.out.println("Plane loading error: "+e.getMessage());
 			return null;

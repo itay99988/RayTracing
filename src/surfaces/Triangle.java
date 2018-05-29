@@ -4,67 +4,75 @@ import RayTracing.Ray;
 import utils.Vector;
 
 public class Triangle extends GeneralObject{
-	private Vector u;
-	private Vector v;
-	private Vector w;
-	private int matIndex;	
+	private Vector v0;
+	private Vector v1;
+	private Vector v2;
 	
 	public Triangle(Material material, Vector u, Vector v, Vector w, int matIndex) {
 		this.setMaterial(material);
-		this.u = u;
-		this.v = v;
-		this.w = w;
-		this.matIndex = matIndex;
+		this.v0 = u;
+		this.v1 = v;
+		this.v2 = w;
 	}
 	
+	
 	public Vector findIntersectionPoint(Ray ray) {
-		//build a plane out of the points
-		Vector vec1 = Vector.vecSubtract(this.v, this.u);
-		Vector vec2 = Vector.vecSubtract(this.v, this.w);
-		Vector normal = Vector.normalized(Vector.crossProduct(vec1, vec2));
-		double offset = (-1) * Vector.dotProduct(normal, u);
-		Plane trianglePlane = new Plane(null,normal,offset,0);
 		
-		//intersection between the plane and the ray
-		Vector p = trianglePlane.findIntersectionPoint(ray);
-		if(p==null) return null;
+		Vector normal = findNormalVector(null);
+		double offset = (-1) * Vector.dotProduct(normal, this.v0);
 		
-		//check side 1
-		Vector v1 = Vector.vecSubtract(this.u, ray.getSource());
-		Vector v2 = Vector.vecSubtract(this.v, ray.getSource());
-		Vector n1 = Vector.normalized(Vector.crossProduct(v1, v2));
-		double d1 = (-1) * Vector.dotProduct(ray.getSource(), n1);
-		double res = (Vector.dotProduct(p, n1) + d1);
-		if(res < 0)
-			return null;
+		Plane trianglePlane = new Plane(null,normal,offset);
+		// Step1: finding P
+
+		Vector p = trianglePlaneIntersection(ray, normal, offset);
+		if(p == null) return null;
 		
-		//check side 2
-		v1 = Vector.vecSubtract(this.v, ray.getSource());
-		v2 = Vector.vecSubtract(this.w, ray.getSource());
-		n1 = Vector.normalized(Vector.crossProduct(v1, v2));
-		d1 = (-1) * Vector.dotProduct(ray.getSource(), n1);
-		res = (Vector.dotProduct(p, n1) + d1);
-		if(res < 0)
-			return null;
+		// Step 2: inside-outside test
+		Vector C; // Vector perpendicular to triangle's plane
 		
-		//check side 3
-		v1 = Vector.vecSubtract(this.w, ray.getSource());
-		v2 = Vector.vecSubtract(this.u, ray.getSource());
-		n1 = Vector.normalized(Vector.crossProduct(v1, v2));
-		res = (Vector.dotProduct(p, n1) + d1);
-		if(res < 0)
-			return null;
-				
+		// edge 0
+		Vector edge0 = Vector.vecSubtract(this.v1, this.v0);
+		Vector vp0 = Vector.vecSubtract(p, this.v0);
+		C = edge0.crossProduct(vp0);
+		if(normal.dotProduct(C) < 0) return null; // P is on the right side
+		
+		// edge 1
+		Vector edge1 = Vector.vecSubtract(this.v2, this.v1);
+		Vector vp1 = Vector.vecSubtract(p, this.v1);
+		C = edge1.crossProduct(vp1);
+		if(normal.dotProduct(C) < 0) return null; // P is on the right side
+		
+		// edge 2
+		Vector edge2 = Vector.vecSubtract(this.v0, this.v2);
+		Vector vp2 = Vector.vecSubtract(p, this.v2);
+		C = edge2.crossProduct(vp2);
+		if(normal.dotProduct(C) < 0) return null; // P is on the right side
+		
 		return p;
+
 	}
 	
 	//gets a point on the triangle and returns the normal direction in that point
 	protected Vector findNormalVector(Vector p) {
-		//build a normal out of the triangle points (by cross-product of the two vectors)
-		Vector vec1 = Vector.vecSubtract(this.v, this.u);
-		Vector vec2 = Vector.vecSubtract(this.v, this.w);
-		Vector normal = Vector.normalized(Vector.crossProduct(vec1, vec2));
+		Vector v0v1 = Vector.vecSubtract(this.v1, this.v0);
+		Vector v0v2 = Vector.vecSubtract(this.v2, this.v0);
+		return v0v1.crossProduct(v0v2);
+	}
+	
+	
+	public Vector trianglePlaneIntersection(Ray ray, Vector normal, double offset) {
+		double d = offset;
+		double VN=Vector.dotProduct(ray.getDirection(), normal);
+		double P0N=Vector.dotProduct(ray.getSource(), normal);
+		double t;
 		
-		return normal;
+		if (VN == 0)
+			return null;
+		
+		t = -(P0N+d)/VN;
+		if (t<=0) 
+			return null;
+		Vector tv = Vector.scalarMult(ray.getDirection(), t);
+		return Vector.vecAdd(ray.getSource(), tv);
 	}
 }

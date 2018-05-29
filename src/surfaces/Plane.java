@@ -7,7 +7,6 @@ public class Plane extends GeneralObject {
 	
 	private Vector normal;
 	private double offset;
-	private int matIndex;	
 	
 	/**
 	 * 
@@ -16,11 +15,10 @@ public class Plane extends GeneralObject {
 	 * @param z the z component of the plane normal.
 	 * @param offset the point that is used to define the plane.
 	 */
-	public Plane(Material material, Vector normal, double offset, int matIndex) {
+	public Plane(Material material, Vector normal, double offset) {
 		this.setMaterial(material);
 		this.normal = normal;
 		this.offset = offset;
-		this.matIndex = matIndex;
 	}
 	
 	public Vector findIntersectionPoint(Ray ray) {
@@ -29,14 +27,16 @@ public class Plane extends GeneralObject {
 		double P0N=Vector.dotProduct(ray.getSource(), this.normal);
 		double t;
 		
-		if (VN==0)
+		if (VN == 0)
 			return null;
-		t=(-P0N+d)/VN;
+		
+		t = (-P0N+d)/VN;
 		if (t<=0) 
 			return null;
 		Vector tv = Vector.scalarMult(ray.getDirection(), t);
 		return Vector.vecAdd(ray.getSource(), tv);
 	}
+	
 	
 	//gets a point on the plane and returns the normal direction in that point
 	protected Vector findNormalVector(Vector p) {
