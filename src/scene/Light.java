@@ -75,6 +75,7 @@ public class Light {
 		Vector N=iObject.findNormalVector(iPoint,ray.getSource());
 		N=Vector.normalized(N);
 		Vector L = Vector.vecSubtract(iPoint,this.position);
+		L=Vector.normalized(L);
 		double NL=Vector.dotProduct(N,L);
 		if(NL<=0) NL*=-1;
 		
