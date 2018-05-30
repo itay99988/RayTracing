@@ -157,24 +157,24 @@ public class Parser {
 			double x = Double.parseDouble(params[0]);
 			double y = Double.parseDouble(params[1]);
 			double z = Double.parseDouble(params[2]);
-			Vector u = new Vector(x,y,z);
+			Vector v0 = new Vector(x,y,z);
 			
 			x = Double.parseDouble(params[3]);
 			y = Double.parseDouble(params[4]);
 			z = Double.parseDouble(params[5]);
-			Vector v = new Vector(x,y,z);
+			Vector v1 = new Vector(x,y,z);
 			
 			x = Double.parseDouble(params[6]);
 			y = Double.parseDouble(params[7]);
 			z = Double.parseDouble(params[8]);
-			Vector w = new Vector(x,y,z);
+			Vector v2 = new Vector(x,y,z);
 			
 			int matIndex = Integer.parseInt(params[9]);
 			if(numOfMaterials < matIndex) {
 				throw new Exception("Material not found");
 			}
 			
-			return new Triangle(materials.get(matIndex-1), u, v, w, matIndex); 
+			return new Triangle(materials.get(matIndex-1), v0, v1, v2, matIndex); 
 		} catch (Exception e) {
 			System.out.println("Triangle loading error: "+e.getMessage());
 			return null;

@@ -6,23 +6,16 @@ import utils.Vector;
 
 public class Camera {
 	private Vector position; 		// Position of the camera
-	private Vector lookPosition; 	// Look-at position of the camera
-	private Vector upVector; 		// Up vector of the camera
 	private Vector direction;		// The direction of the camera
-	private double screenDistance;	// Screen distance from the camera
 	private double screenWidth;		// Screen width
-	private Vector screenCenter;		// The coordinate for the center of the screen.
-	
+	private Vector screenCenter;	// The coordinate for the center of the screen.
 	private Vector rightDirection;	// This vector points to the direction that will be interpreted as 'right' on the screen.
 	private Vector upDirection;		// This vector points to the direction that will be interpreted as 'up' on the screen.
 	
 	public Camera(Vector position, Vector lookPosition, Vector upVector,
 				  double screenDistance, double screenWidth) {
 		this.position = position;
-		this.lookPosition = lookPosition;
 		this.direction = Vector.vecSubtract(lookPosition, position).normalized();
-		this.upVector = upVector;
-		this.screenDistance = screenDistance;
 		this.screenWidth = screenWidth;
 		this.rightDirection = Vector.crossProduct(this.direction, upVector).normalized();
 		this.upDirection = Vector.crossProduct(this.rightDirection, this.direction).normalized();
@@ -30,52 +23,17 @@ public class Camera {
 		this.screenCenter = ray.getPointAtDistance(screenDistance);
 		}
 	
-
-	public Vector getPosition() {
-		return this.position;
-	}
-
-	public Vector getLookPosition() {
-		return this.lookPosition;
-	}
-
-	public Vector getUpVector() {
-		return this.upVector;
-	}
-
-	public Vector getDirection() {
-		return this.direction;
-	}
-
-	public double getScreenDistance() {
-		return this.screenDistance;
-	}
-
-	public double getScreenWidth() {
-		return this.screenWidth;
-	}
-	
-	public Vector getFovCenter() {
-		return screenCenter;
-	}
-
-	public Vector getRightDirection() {
-		return rightDirection;
-	}
-
-	public Vector getUpDirection() {
-		return upDirection;
-	}
 	
 	public Ray makeRay(Vector dest) {
 		return new Ray(this.position, dest);
 	}
+	
 
 	public Ray constructRayThroughPixel(double x, double y) {
 		Settings settings = RayTracer.getSettings();
 		double imageWidth = settings.getImageWidth();
 		double imageHeight = settings.getImageHeight();
-		double pixelWidth = this.getScreenWidth()/imageWidth;
+		double pixelWidth = this.screenWidth/imageWidth;
 		double pixelHeight = pixelWidth * imageWidth/imageHeight;
 		
 		double upDistance = (imageHeight/2 - y) * pixelHeight;

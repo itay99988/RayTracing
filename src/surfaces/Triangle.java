@@ -21,32 +21,32 @@ public class Triangle extends GeneralObject{
 		Vector normal = findNormalVector(null);
 		double offset = (-1) * Vector.dotProduct(normal, this.v0);
 		
-		Plane trianglePlane = new Plane(null,normal,offset);
-		// Step1: finding P
+		/////////// Step1: finding P ///////////
 
 		Vector p = trianglePlaneIntersection(ray, normal, offset);
 		if(p == null) return null;
 		
-		// Step 2: inside-outside test
-		Vector C; // Vector perpendicular to triangle's plane
+		////// Step 2: inside-outside test /////
+		
+		Vector c; // Vector perpendicular to triangle's plane
 		
 		// edge 0
 		Vector edge0 = Vector.vecSubtract(this.v1, this.v0);
-		Vector vp0 = Vector.vecSubtract(p, this.v0);
-		C = edge0.crossProduct(vp0);
-		if(normal.dotProduct(C) < 0) return null; // P is on the right side
+		Vector v0p = Vector.vecSubtract(p, this.v0);
+		c = edge0.crossProduct(v0p);
+		if(normal.dotProduct(c) < 0) return null; // p is on the right side
 		
 		// edge 1
 		Vector edge1 = Vector.vecSubtract(this.v2, this.v1);
-		Vector vp1 = Vector.vecSubtract(p, this.v1);
-		C = edge1.crossProduct(vp1);
-		if(normal.dotProduct(C) < 0) return null; // P is on the right side
+		Vector v1p = Vector.vecSubtract(p, this.v1);
+		c = edge1.crossProduct(v1p);
+		if(normal.dotProduct(c) < 0) return null; // p is on the right side
 		
 		// edge 2
 		Vector edge2 = Vector.vecSubtract(this.v0, this.v2);
-		Vector vp2 = Vector.vecSubtract(p, this.v2);
-		C = edge2.crossProduct(vp2);
-		if(normal.dotProduct(C) < 0) return null; // P is on the right side
+		Vector v2p = Vector.vecSubtract(p, this.v2);
+		c = edge2.crossProduct(v2p);
+		if(normal.dotProduct(c) < 0) return null; // p is on the right side
 		
 		return p;
 
@@ -60,7 +60,7 @@ public class Triangle extends GeneralObject{
 	}
 	
 	
-	public Vector trianglePlaneIntersection(Ray ray, Vector normal, double offset) {
+	private Vector trianglePlaneIntersection(Ray ray, Vector normal, double offset) {
 		double d = offset;
 		double VN=Vector.dotProduct(ray.getDirection(), normal);
 		double P0N=Vector.dotProduct(ray.getSource(), normal);

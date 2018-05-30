@@ -160,7 +160,7 @@ public class RayTracer {
 					}
 					this.triangles.add(triangle);
 					
-					System.out.println(String.format("Parsed light (line %d)", lineNum));
+					System.out.println(String.format("Parsed triangle (line %d)", lineNum));
 				}
 				else if (code.equals("lgt"))
 				{
@@ -197,8 +197,10 @@ public class RayTracer {
 		
 		Ray ray;
 		int sampleSize = settings.getSupSampLvl();
-		Vector iPoint;			// intersection point
-		GeneralObject iObject;	// intersected object
+		double[] bgCol = settings.getBgCol();					// Background color
+		double[] accuCol = {0.0, 0.0, 0.0};						// Accumulated color
+		Vector iPoint;											// intersection point
+		GeneralObject iObject;									// intersected object
 		List<GeneralObject> allObjects = new ArrayList<>();
 		allObjects.addAll(this.spheres);
 		allObjects.addAll(this.planes);
@@ -210,8 +212,7 @@ public class RayTracer {
 		//for each pixel:
 		for(int y = 0; y < imageHeight; y++) {
 			for(int x = 0; x < imageWidth; x++) {
-				double[] bgCol = settings.getBgCol();	// Background color
-				double[] accuCol = {0.0, 0.0, 0.0};				// Accumulated color
+				ArrayServices.arrScalarMult(accuCol, 0);	// Nullify accumulated color.
 				
 				//for each sample:
 				for(int i = 0; i < sampleSize; i++) {
