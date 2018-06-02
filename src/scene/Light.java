@@ -6,6 +6,8 @@ import java.util.List;
 import RayTracing.Intersection;
 import RayTracing.Ray;
 import surfaces.GeneralObject;
+import surfaces.Plane;
+import utils.ArrayServices;
 import utils.Vector;
 
 public class Light {
@@ -33,32 +35,75 @@ public class Light {
 		return newLgtColor;
 	}
 	
-	//returns null if no intersection was found
-	public double[] lightCheck(List<GeneralObject> allObjects,Ray ray,Intersection iPoint) {
+	//calculate the light influece on the pixel color
+	public double[] lightCheck(List<GeneralObject> allObjects,Ray ray,Intersection iPoint,int numOfShRays) {
 		Vector L = Vector.vecSubtract(iPoint.getIntersectionPoint(),this.position).normalized();
 		
-		Ray lightRay=new Ray(this.position, L);//create ray from light source to intersection point
-		GeneralObject iObject = lightRay.findIntersectedObject(allObjects, lightRay);
-		if(iObject == null) {
-			return null;
-		}
-		Vector lightIntersectionPoint = lightRay.findIntersectionPointForClosestObj(lightRay, iObject);
-		Intersection lightIPoint = lightRay.createIntersectionObject(iObject, lightIntersectionPoint);
+		//create a perpendicular plane to the light ray and compute the two vectors
+		//that defines it, and normalize these vectors
+		Vector planeNormal = new Vector(L.X(),L.Y(),L.Z());
+		double planeD = (-1) * Vector.dotProduct(planeNormal, this.position);
+		Plane lightPlane = new Plane(null,planeNormal,planeD);
+		Vector planeVec1 = lightPlane.findProjectionFromPoint(this.position, new Vector(1,2,3));
+		Vector planeVec2 = Vector.crossProduct(planeNormal, planeVec1).normalized();
 		
-		//check if lights intersects same point upto epsilon
-		if((lightIPoint!=null) && (Vector.calculateDistance(lightIPoint.getIntersectionPoint(),iPoint.getIntersectionPoint())<0.0000001F)){
-			return calculateColor(iPoint.getIntersectionPoint(),iPoint.getGeneralObject(), ray);
+		double hitRaysCount=0;
+		double radius = lgtWidth;
+		double unit = radius/numOfShRays;
+		//initialize start points on the matrix that is on the light plane
+		Vector tempPosition = Vector.vecAdd(this.position, Vector.scalarMult(planeVec2, -1*(radius/2)));
+		Vector startPoint = Vector.vecAdd(tempPosition, Vector.scalarMult(planeVec1, -1*(radius/2)));
+		//new unit-normalization to the plane's vectors
+		planeVec1 = Vector.scalarMult(planeVec1, unit);
+		planeVec2 = Vector.scalarMult(planeVec2, unit);
+		
+		//count how many rays directly hit the intersection point
+		for(int i=0;i<numOfShRays;i++) {
+			for(int j=0;j<numOfShRays;j++) {
+				double sampX = Math.random(); // values between 0 and 1.
+				double sampY = Math.random();
+				
+				//create a randomized point inside the pixel
+				tempPosition = Vector.vecAdd(startPoint, Vector.scalarMult(planeVec1, sampX));
+				Vector randomizedPoint = Vector.vecAdd(tempPosition, Vector.scalarMult(planeVec2, sampY));
+				L = Vector.vecSubtract(iPoint.getIntersectionPoint(),randomizedPoint).normalized();
+				
+				Ray lightRay=new Ray(randomizedPoint, L);//create ray from light source to intersection point
+				GeneralObject iObject = lightRay.findIntersectedObject(allObjects, lightRay);
+				if(iObject == null) {
+					return null;
+				}
+				Vector lightIntersectionPoint = lightRay.findIntersectionPointForClosestObj(lightRay, iObject);
+				Intersection lightIPoint = lightRay.createIntersectionObject(iObject, lightIntersectionPoint);
+				
+				//check if lights intersects same point upto epsilon
+				if((lightIPoint!=null) && (Vector.calculateDistance(lightIPoint.getIntersectionPoint(),iPoint.getIntersectionPoint())<0.0000001F)){
+					//if it does, increment counter by one
+					hitRaysCount++;
+				}
+				//move the startpoint to the next pixel in row
+				startPoint = Vector.vecAdd(startPoint, planeVec1);
+			}
+			//move the startpoint to the next row
+			startPoint = Vector.vecAdd(startPoint, Vector.scalarMult(planeVec1, -1*numOfShRays*(radius)));
+			startPoint = Vector.vecAdd(startPoint,planeVec2);
+		}
+		
+		//now calculate colors and multiply by the ratio between hit and blocked rays
+		L = Vector.vecSubtract(iPoint.getIntersectionPoint(),this.position).normalized();
+		double hitBlockedRatio = hitRaysCount/(numOfShRays*numOfShRays);
+		double[] sumDiffSpec;
+		if(hitBlockedRatio > 0) {
+			sumDiffSpec = calculateColor(iPoint.getIntersectionPoint(),iPoint.getGeneralObject(), ray);
+			ArrayServices.arrScalarMult(sumDiffSpec, hitBlockedRatio);
 		}
 		else {
-			//there is not direct path between the light and the intersection point
+			//there is no direct path between the light and the intersection point
 			//this is a reason to use the shadow intensity parameter
-			double[] sumDiffSpec = calculateColor(iPoint.getIntersectionPoint(),iPoint.getGeneralObject(), ray);
-			sumDiffSpec[0]*=(1-this.shadowIntensity);
-			sumDiffSpec[1]*=(1-this.shadowIntensity);
-			sumDiffSpec[2]*=(1-this.shadowIntensity);
-			
-			return sumDiffSpec;
+			sumDiffSpec = calculateColor(iPoint.getIntersectionPoint(),iPoint.getGeneralObject(), ray);
+			ArrayServices.arrScalarMult(sumDiffSpec, 1-this.shadowIntensity);
 		}
+		return sumDiffSpec;
 	}
 	
 	//calculate the sum of the diffuse color and the specular color, base on phong-shading-model

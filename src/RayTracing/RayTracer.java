@@ -272,8 +272,9 @@ public class RayTracer {
 	private double[] computeColor(List<GeneralObject> allObjects,Ray ray,Intersection intersection, Settings settings) {
 		double[] bgCol = settings.getBgCol();
 		int maxRecLvl = settings.getMaxRecursion();
+		int numOfShRays = settings.getNumOfShadowRays();
 		double[] finalCol = new double[3];
-		finalCol = recComputeCol(allObjects, ray, intersection, bgCol, 1, maxRecLvl);
+		finalCol = recComputeCol(allObjects, ray, intersection, bgCol, 1, maxRecLvl, numOfShRays);
 		return finalCol;
 	}
 	
@@ -285,16 +286,18 @@ public class RayTracer {
 	 * @param bgCol Color of the background
 	 * @param curRecLvl Current recursion level.
 	 * @param maxRecLvl Maximum recursion level.
-	 * @return
+	 * @param numOfShRays number of shadow rays for soft shadows computation 
+	 * @return 
 	 */
-	private double[] recComputeCol(List<GeneralObject> allObjects,Ray ray,Intersection intersection,  double[] bgCol, int curRecLvl, int maxRecLvl) {
+	private double[] recComputeCol(List<GeneralObject> allObjects,Ray ray,Intersection intersection, double[] bgCol, int curRecLvl, int maxRecLvl, int numOfShRays) {
 		double[] curCol = {0.0, 0.0, 0.0};
 		double transparency = intersection.getGeneralObject().getMaterial().getTransparency();
 		double[] reflectionCol =  intersection.getGeneralObject().getMaterial().getRefCol();
 		double[] bgTimesTrans = {0.0, 0.0, 0.0};
 		double[] lightCol;
+		
 		for(Light light : this.lights) { // Calculate the value of diffuse+specular from all lights.
-			lightCol = light.lightCheck(allObjects, ray, intersection);
+			lightCol = light.lightCheck(allObjects, ray, intersection, numOfShRays);
 			if(lightCol != null) {
 				ArrayServices.arrAdd(curCol, lightCol);
 			}
@@ -318,7 +321,7 @@ public class RayTracer {
 				List<GeneralObject> mostObjects = new ArrayList<GeneralObject>(allObjects); // Pass all objects except 
 				mostObjects.remove(iObject);
 				
-				ArrayServices.arrAdd(bgTimesTrans, recComputeCol(mostObjects, transRay, transIntersection, bgCol, curRecLvl+1, maxRecLvl)); // Add the transparency color returned by other objects to the bg color
+				ArrayServices.arrAdd(bgTimesTrans, recComputeCol(mostObjects, transRay, transIntersection, bgCol, curRecLvl+1, maxRecLvl, 1)); // Add the transparency color returned by other objects to the bg color
 			}
 			else if(transparency > 0){ // No Object behind and current object is transparent
 				ArrayServices.arrAdd(bgTimesTrans, bgCol);
@@ -331,7 +334,7 @@ public class RayTracer {
 			if(refIObject != null) { // Found intersection
 				Vector refIPoint = ray.findIntersectionPointForClosestObj(refRay, refIObject);
 				Intersection refIntersection = refRay.createIntersectionObject(refIObject, refIPoint);
-				ArrayServices.arrMult(reflectionCol, recComputeCol(allObjects, refRay, refIntersection, bgCol, curRecLvl+1, maxRecLvl)); // Multiply object's reflection color by the reflected color
+				ArrayServices.arrMult(reflectionCol, recComputeCol(allObjects, refRay, refIntersection, bgCol, curRecLvl+1, maxRecLvl, 1)); // Multiply object's reflection color by the reflected color
 			}
 		}
 		
