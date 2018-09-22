@@ -36,7 +36,7 @@ An example input file can be found [Here](https://github.com/itay99988/RayTracin
 The input file in inserted as a command line argument.
 
 ## Scene objects types
-We implement a few types of objects that the program can deal with: 
+We have implemented a few types of objects that the program can deal with: 
 * A sphere (3d)
 * A plane (2d)
 * A triangle (2d)
