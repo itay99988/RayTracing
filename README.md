@@ -64,7 +64,7 @@ exclude the borders.<br>
 4. The color of this pixel will be the average of the NxN samples.
 
 ## Pseudo Code
-The program pseudo-code can be found [Here](https://github.com/itay99988/RayTracing/blob/master/Ray%20Tracer%20Program%20-%20Pseudo%20Code.pdf).
+The program's pseudo-code can be found [Here](https://github.com/itay99988/RayTracing/blob/master/Ray%20Tracer%20Program%20-%20Pseudo%20Code.pdf).
 
 ## Scene Definition Format
 This is a more detailed description of the input text file. The scenes are defined in text scene files with the following format. Every line in the file defines a single object in the scene, and starts with a 3 letter code that identifies the object type. After the 3 letter code a list of numeric parameters is given.
