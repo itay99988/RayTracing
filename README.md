@@ -18,7 +18,7 @@ Below are some of the program outputs:
 ## Algorithm overview
 Optical ray tracing describes a method for producing visual images constructed in 3D computer graphics environments. It works by tracing a path from an imaginary eye through each pixel in a virtual screen, and calculating the color of the object visible through it.
 
-Scenes in ray tracing are described mathematically by an input file which is processed by the program. Typically, each ray must be tested for intersection with some subset of all the objects in the scene. Once the nearest object has been identified, the algorithm will estimate the incoming light at the point of intersection, examine the material properties of the object, and combine this information to calculate the final color of the pixel. In our case, we use Phong illumination model in order to calculate the way the light affects each fixel in the scene. The program also takes reflective and transparent materials into account.
+Scenes in ray tracing are described mathematically by an input file which is processed by the program. Typically, each ray must be tested for intersection with some subset of all the objects in the scene. Once the nearest object has been identified, the algorithm will estimate the incoming light at the point of intersection, examine the material properties of the object, and combine this information to calculate the final color of the pixel. In our case, we use Phong illumination model in order to calculate the way the light affects each pixel in the scene. The program also takes reflective and transparent materials into account.
 
 It may at first seem counterintuitive or "backwards" to send rays away from the camera, rather than into it (as actual light does in reality), but doing so is many orders of magnitude more efficient. Since the majority of light rays from a given light source do not make it directly into the viewer's eye, a "forward" simulation could potentially waste a major amount of computation on light paths that are never recorded.
 
@@ -42,38 +42,57 @@ We implement a few types of objects that the program can deal with:
 * A triangle (2d)
 
 ## Illumination model overview
-We used the Phong illumonation and shading model in order to light the scene:
+We used the Phong illumination and shading model in order to light the scene:
 * Diffuse color (RGB). This is the "regular" color of a surface. This value is multiplied by the light received by the object to find the base color of the object.
 * Specular color (RGB). Specularity is the color the material gets from the reflection of a light source. The specular color of a surface defines the intensity and color of that reflection. Materials in real life often have different specular color than diffuse color. For example, a polished wooden desk would have a brown diffuse color but white specular color.
 * Phong specularity coefficient (floating point number). We will use the Phong shading model. This coefficient controls the type of specularity of a surface. A high value (around 100) renders small and sharp specular reflections, for shiny surfaces such as metal, and a low value (around 1 or so) renders wide and soft specular reflections, for materials such as clay or stone.
 
 ## Special features
+We have also added some special features for image enhancement:
+* Transparency - materials can be defined as transparent or semi-transparent. It means that casted rays can travel through surfaces, and as a result we can see through objects in the scene.
+* Soft-shadows - In general, to generate shadows on a surface we send a ray from the light source
+to the surface and check whether the ray hits other objects prior to that surface.
+This will produce a hard shadow, as every pixel would either be completely lit or completely shadowed. In reality lights do not emanate from points, because the light source has some area to it.
+To generate soft shadows, we send several shadow rays from the light source to a point on the surface. The light intensity that hits the surface from this light source is multiplied by the number of rays that hit the surface divided by the total number of rays we sent. For example, if we send 25 rays from the light source and 5 of them hit the surface at the given point, the surface will be 20% illuminated at that point. If the number of shadow rays parameter is 1 only one ray will be cast
+and the shadows will be hard. The sent rays simulate a light which has a certain area. Each light is defined with a light radius (see light parameters).
+* SuperSampling - The super sampling technique will help us reduce the problem of aliasing, in this technique we shoot NxN rays (samples) through each pixel and the color showed in this pixel is the average color of the NxN samples.
+The process for the super sampling is as follow:
+1. Divide the pixel into NxN equal areas.<br>
+2. Like the soft shadows computation randomly choose a point in each area,
+exclude the borders.<br>
+3. Shoot ray through that point and sample the color.<br>
+4. The color of this pixel will be the average of the NxN samples.
+
+## Pseudo Code
+The program pseudo-code can be found [Here](https://github.com/itay99988/RayTracing/blob/master/Ray%20Tracer%20Program%20-%20Pseudo%20Code.pdf).
 
 ## Scene Definition Format
 This is a more detailed description of the input text file. The scenes are defined in text scene files with the following format. Every line in the file defines a single object in the scene, and starts with a 3 letter code that identifies the object type. After the 3 letter code a list of numeric parameters is given.
 The possible objects with their code and list of required parameters are given below.
-* "cam" = camera settings (there will be only one per scene file) params[0,1,2] = position (x, y, z) of the camera params[3,4,5] = look-at position (x, y, z) of the camera params[6,7,8] = up vector (x, y, z) of the camera params[9] = screen distance from camera
+* "cam" = camera settings (there will be only one per scene file). params[0,1,2] = position (x, y, z) of the camera. params[3,4,5] = look-at position (x, y, z) of the camera. params[6,7,8] = up vector (x, y, z) of the camera. params[9] = screen distance from camera.
 params[10] = screen width from camera
-* "set" = general settings for the scene (once per scene file) params[0,1,2] = background color (r, g, b)
-params[3] = root number of shadow rays (N^2 rays will be shot) params[4] = maximum number of recursions
+* "set" = general settings for the scene (once per scene file). params[0,1,2] = background color (r, g, b).
+params[3] = root number of shadow rays (N^2 rays will be shot). params[4] = maximum number of recursions.
 params[5] = super sampling level.
-* "mtl" = defines a new material
-params[0,1,2] = diffuse color (r, g, b) params[3,4,5] = specular color (r, g, b) params[6,7,8] = reflection color (r, g, b)
-params[9] = phong specularity coefficient (shininess) params[10] = transparency value between 0 and 1 params[11] = incidence
-if the feature is not implemented, the value is ignored
-* "sph" = defines a new sphere
-params[0,1,2] = position of the sphere center (x, y, z) params[3] = radius
-params[4] = material index (integer). each defined material gets an automatic material index starting from 1, 2 and so on
-* "pln" = defines a new plane params[0,1,2] = normal (x, y, z) params[3] = offset
-params[4] = material index
+* "mtl" = defines a new material.
+params[0,1,2] = diffuse color (r, g, b). params[3,4,5] = specular color (r, g, b). params[6,7,8] = reflection color (r, g, b).
+params[9] = phong specularity coefficient (shininess). params[10] = transparency value between 0 and 1. params[11] = incidence
+if the feature is not implemented, the value is ignored.
+* "sph" = defines a new sphere.
+params[0,1,2] = position of the sphere center (x, y, z). params[3] = radius.
+params[4] = material index (integer). each defined material gets an automatic material index starting from 1, 2 and so on.
+* "pln" = defines a new plane. params[0,1,2] = normal (x, y, z). params[3] = offset.
+params[4] = material index.
 * "trg" = defines a new triangle
-Params[0,1,2]=position of vertex 1
-Params[3,4,5]=position of vertex 2
-Params[6,7,8]=position of vertex 3
-params[9] = material index
-* "lgt" = defines a new light
-params[0,1,2] = position of the light (x, y, z) params[3,4,5] = light color (r, g, b) params[6] = specular intensity
-params[7] = shadow intensity
-params[8] = light width / radius (used for soft shadows)
+Params[0,1,2]=position of vertex 1.
+Params[3,4,5]=position of vertex 2.
+Params[6,7,8]=position of vertex 3.
+params[9] = material index.
+* "lgt" = defines a new light.
+params[0,1,2] = position of the light (x, y, z). params[3,4,5] = light color (r, g, b). params[6] = specular intensity.
+params[7] = shadow intensity.
+params[8] = light width / radius (used for soft shadows).
 
 ## Credits
+* [Assaf Manor](https://github.com/assafmanor)
+* [Itay Cohen](https://github.com/itay99988)
