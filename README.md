@@ -7,8 +7,7 @@ The program's purpose is to render an image from a 3d model which decribes objec
 Below are some of the program outputs:
 <p align="center">
   <img src="./images/pool.png" alt="pool example"
-       width="500" height="500">
-  <br>
-  <img src="./img/spheres.png" alt="spheres example"
-     width="500" height="500">
+       width="300" height="300">
+  <img src="./images/spheres.png" alt="spheres example"
+     width="300" height="300">
 </p>
